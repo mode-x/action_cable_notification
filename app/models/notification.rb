@@ -3,5 +3,9 @@ class Notification < ApplicationRecord
   belongs_to :recipient, class_name: "User"
   belongs_to :notifiable, polymorphic: true
 
-  after_commit { ActionCable.server.broadcast("notifications:1", {html: "<div>Hello!!!</div>"}) }
+  after_commit :send_notification
+
+  def send_notification
+    NotificationRelayJob.perform_async(id)
+  end
 end

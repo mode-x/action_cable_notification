@@ -2,10 +2,16 @@ class NotificationRelayJob
   include Sidekiq::Job
 
   def perform(id)
-    # notification = Notification.find(id)
-    # html = Application.render partial: "notifications/#{notification.notifiable_type.underscore.pluralize}/#{notification.action}", locals: { notification: notification }, formats: [:html]
-    # ActionCable.server.broadcast "notifications:#{notification.recipient_id}", html: html
+    notification = Notification.find(id)
 
-    ActionCable.server.broadcast("notifications:1", {html: "<div>Hello!!!</div>"})
+    template = %(
+            <turbo-stream action="append" target="notifications">
+              <template>
+                <p class="title is-6">Notification #{id}</p>
+              </template>
+            </turbo-stream>
+          )
+
+    ActionCable.server.broadcast("notifications:#{notification.recipient_id}", {html: template})
   end
 end
